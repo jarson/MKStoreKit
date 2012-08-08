@@ -561,10 +561,10 @@ static MKStoreManager* _sharedStoreManager;
     subscriptionProduct.receipt = receiptData;
     [subscriptionProduct verifyReceiptOnComplete:^(NSNumber* isActive)
      {
+        [MKStoreManager setObject:receiptData forKey:productIdentifier];      
        [[NSNotificationCenter defaultCenter] postNotificationName:kSubscriptionsPurchasedNotification 
                                                            object:productIdentifier];
        
-       [MKStoreManager setObject:receiptData forKey:productIdentifier];      
        if(self.onTransactionCompleted)
          self.onTransactionCompleted(productIdentifier, receiptData);
      }
