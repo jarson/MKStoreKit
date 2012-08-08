@@ -470,7 +470,7 @@ static MKStoreManager* _sharedStoreManager;
 	else
 	{
     [self showAlertWithTitle:NSLocalizedString(@"In-App Purchasing disabled", @"")
-                     message:NSLocalizedString(@"Check your parental control settings and try again later", @"")];
+                     message:NSLocalizedString(@"Check your parental control settings or try again later", @"")];
 	}
 }
 
