@@ -82,4 +82,6 @@
 
 -(void) restoreCompleted;
 -(void) restoreFailedWithError:(NSError*) error;
+- (NSDictionary*) subscriptionReceiptForProduct:(NSString*)productID;
+
 @end

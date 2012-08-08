@@ -61,6 +61,7 @@
 - (void) startVerifyingSubscriptionReceipts;
 -(void) rememberPurchaseOfProduct:(NSString*) productIdentifier withReceipt:(NSData*) receiptData;
 -(void) addToQueue:(NSString*) productId;
+
 @end
 
 @implementation MKStoreManager
@@ -670,6 +671,14 @@ static MKStoreManager* _sharedStoreManager;
   
   if(self.onTransactionCancelled)
     self.onTransactionCancelled();
+}
+
+- (NSDictionary*) subscriptionReceiptForProduct:(NSString*)productID
+{
+    MKSKSubscriptionProduct *subscriptionProduct = [self.subscriptionProducts objectForKey:productID];
+    
+    return subscriptionProduct.receiptDictionary; 
+    
 }
 
 @end
