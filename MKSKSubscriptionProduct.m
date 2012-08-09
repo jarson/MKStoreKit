@@ -109,6 +109,13 @@
   }
 }
 
+- (NSDictionary*) receiptDictionary
+{
+    if([self.verifiedReceiptDictionary objectForKey:@"receipt"]){
+        return [self.verifiedReceiptDictionary objectForKey:@"receipt"];
+    }
+    return nil;
+}
 
 #pragma mark -
 #pragma mark NSURLConnection delegate

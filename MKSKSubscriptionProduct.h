@@ -49,5 +49,6 @@
                          onError:(void (^)(NSError*)) errorBlock;
 
 -(BOOL) isSubscriptionActive;
+-(NSDictionary*) receiptDictionary;
 -(id) initWithProductId:(NSString*) productId subscriptionDays:(int) days;
 @end
