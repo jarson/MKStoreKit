@@ -61,6 +61,7 @@
 - (void) startVerifyingSubscriptionReceipts;
 -(void) rememberPurchaseOfProduct:(NSString*) productIdentifier withReceipt:(NSData*) receiptData;
 -(void) addToQueue:(NSString*) productId;
+-(void) addToQueue:(NSString*) productId withQuantity:(NSInteger) quantity;
 
 @end
 
@@ -424,54 +425,70 @@ static MKStoreManager* _sharedStoreManager;
 }
 
 - (void) buyFeature:(NSString*) featureId
+       withQuantity:(NSInteger) quantity
          onComplete:(void (^)(NSString*, NSData*)) completionBlock         
         onCancelled:(void (^)(void)) cancelBlock
 {
-  self.onTransactionCompleted = completionBlock;
-  self.onTransactionCancelled = cancelBlock;
-  
-  [MKSKProduct verifyProductForReviewAccess:featureId                                                              
-                                 onComplete:^(NSNumber * isAllowed)
-   {
-     if([isAllowed boolValue])
+    self.onTransactionCompleted = completionBlock;
+    self.onTransactionCancelled = cancelBlock;
+    
+    [MKSKProduct verifyProductForReviewAccess:featureId                                                              
+                                   onComplete:^(NSNumber * isAllowed)
      {
-       [self showAlertWithTitle:NSLocalizedString(@"Review request approved", @"")
-                        message:NSLocalizedString(@"You can use this feature for reviewing the app.", @"")];
-       
-       if(self.onTransactionCompleted)
-         self.onTransactionCompleted(featureId, nil);                                         
-     }
-     else
+         if([isAllowed boolValue])
+         {
+             [self showAlertWithTitle:NSLocalizedString(@"Review request approved", @"")
+                              message:NSLocalizedString(@"You can use this feature for reviewing the app.", @"")];
+             
+             if(self.onTransactionCompleted)
+                 self.onTransactionCompleted(featureId, nil);                                         
+         }
+         else
+         {
+             [self addToQueue:featureId withQuantity:quantity];
+         }
+         
+     }                                                                   
+                                      onError:^(NSError* error)
      {
-       [self addToQueue:featureId];
-     }
-     
-   }                                                                   
-                                    onError:^(NSError* error)
-   {
-     NSLog(@"Review request cannot be checked now: %@", [error description]);
-     [self addToQueue:featureId];
-   }];    
+         NSLog(@"Review request cannot be checked now: %@", [error description]);
+         [self addToQueue:featureId withQuantity:quantity];
+     }];    
 }
 
--(void) addToQueue:(NSString*) productId
+
+- (void) buyFeature:(NSString*) featureId
+         onComplete:(void (^)(NSString*, NSData*)) completionBlock         
+        onCancelled:(void (^)(void)) cancelBlock
 {
-  if ([SKPaymentQueue canMakePayments])
+    [self buyFeature:featureId withQuantity:1 onComplete:completionBlock onCancelled:cancelBlock];
+    
+}
+
+-(void) addToQueue:(NSString*) productId withQuantity:(NSInteger) quantity
+{
+    if ([SKPaymentQueue canMakePayments] && quantity > 0)
 	{
-    NSArray *allIds = [self.purchasableObjects valueForKey:@"productIdentifier"];
-    int index = [allIds indexOfObject:productId];
-    
-    if(index == NSNotFound) return;
-    
-    SKProduct *thisProduct = [self.purchasableObjects objectAtIndex:index];
-		SKPayment *payment = [SKPayment paymentWithProduct:thisProduct];
+        NSArray *allIds = [self.purchasableObjects valueForKey:@"productIdentifier"];
+        int index = [allIds indexOfObject:productId];
+        
+        if(index == NSNotFound) return;
+        
+        SKProduct *thisProduct = [self.purchasableObjects objectAtIndex:index];
+		SKMutablePayment *payment = [SKPayment paymentWithProduct:thisProduct];
+        payment.quantity = quantity;
 		[[SKPaymentQueue defaultQueue] addPayment:payment];
 	}
 	else
 	{
-    [self showAlertWithTitle:NSLocalizedString(@"In-App Purchasing disabled", @"")
-                     message:NSLocalizedString(@"Check your parental control settings or try again later", @"")];
+        [self showAlertWithTitle:NSLocalizedString(@"In-App Purchasing disabled", @"")
+                         message:NSLocalizedString(@"Check your parental control settings or try again later", @"")];
 	}
+}
+
+-(void) addToQueue:(NSString*) productId
+{
+    [self addToQueue:productId withQuantity:1];
 }
 
 - (BOOL) canConsumeProduct:(NSString*) productIdentifier

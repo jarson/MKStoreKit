@@ -61,6 +61,12 @@
 - (NSMutableDictionary *)pricesDictionary;
 - (NSMutableArray*) purchasableObjectsDescription;
 
+//Use this method to purchase non-renewable subscriptions with a specific quantity (must be > 0)
+- (void) buyFeature:(NSString*) featureId
+       withQuantity:(NSInteger) quantity
+         onComplete:(void (^)(NSString*, NSData*)) completionBlock         
+        onCancelled:(void (^)(void)) cancelBlock;
+
 // use this method to invoke a purchase
 - (void) buyFeature:(NSString*) featureId
          onComplete:(void (^)(NSString* purchasedFeature, NSData*purchasedReceipt)) completionBlock         
